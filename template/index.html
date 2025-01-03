@@ -109,7 +109,6 @@
       } else {
         comments.forEach(comment => {
           commentsContainer.innerHTML += `
-            <hr>
             <p><strong>${comment.id}楼 ${comment.user}</strong> 说：</p>
             <p>${comment.text}</p>
             <p><small>时间: ${new Date(comment.timestamp).toLocaleString('zh-CN')}</small></p>
