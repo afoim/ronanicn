@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{.Title}}</title>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script>
+    // 文章数据
+    const articles = {
+      {{range .Articles}}
+      "{{.Link}}": {
+        title: "{{.Title}}",
+        content: `{{.Content}}`,
+      },
+      {{end}}
+    };
+
+    // 当前页面
+    let currentPage = window.location.hash.substring(1) || 'home';
+
+    // 页面加载时初始化
+    window.onload = () => {
+      loadPageContent();
+      loadComments();
+    };
+
+    // 加载页面内容
+    function loadPageContent() {
+      if (currentPage === 'home') {
+        // 首页
+        document.getElementById('main-content').innerHTML = `
+          <h1>Record</h1>
+          <ul>
+            {{range .Articles}}
+            <li><a href="#{{.Link}}" onclick="loadArticle('{{.Link}}')">{{.Title}}</a></li>
+            {{end}}
+          </ul>
+        `;
+      } else {
+        // 文章页
+        const article = articles[currentPage];
+        if (article) {
+          // 直接填充文章正文到中区域
+          document.getElementById('main-content').innerHTML = `
+            <h1>${article.title}</h1>
+            ${article.content}
+          `;
+        } else {
+          document.getElementById('main-content').innerHTML = `
+            <h1>文章未找到</h1>
+            <p>文章不存在。</p>
+          `;
+        }
+      }
+    }
+
+    // 加载文章
+    function loadArticle(link) {
+      currentPage = link;
+      window.location.hash = link;
+      loadPageContent();
+      loadComments();
+    }
+
+    // 加载评论
+    async function loadComments() {
+      const response = await fetch(`https://api-r.onani.cn/getcomment?page=${currentPage}`);
+      const { data: comments } = await response.json();
+      const commentsContainer = document.getElementById('comments');
+      commentsContainer.innerHTML = '<h3>评论区</h3>';
+
+      if (comments.length === 0) {
+        commentsContainer.innerHTML += '<p>暂无评论，快来抢沙发吧！</p>';
+      } else {
+        comments.forEach(comment => {
+          commentsContainer.innerHTML += `
+            <hr>
+            <p><strong>${comment.id}楼 ${comment.user}</strong> 说：</p>
+            <p>${comment.text}</p>
+            <p><small>时间: ${new Date(comment.timestamp).toLocaleString('zh-CN')}</small></p>
+            <p><small>设备: ${comment.user_agent}</small></p>
+          `;
+        });
+      }
+    }
+
+    // 提交评论
+    async function submitComment() {
+      const user = document.getElementById('comment-user').value || 'Anonymous';
+      const text = document.getElementById('comment-text').value.trim();
+      const token = document.querySelector('[name="cf-turnstile-response"]').value;
+
+      // 检查评论内容是否为空
+      if (!text) {
+        alert('评论内容不能为空！');
+        return;
+      }
+
+      // 检查评论内容长度（可选）
+      if (text.length > 500) {
+        alert('评论内容不能超过500字！');
+        return;
+      }
+
+      // 检查用户名长度（可选）
+      if (user.length > 20) {
+        alert('用户名不能超过20字！');
+        return;
+      }
+
+      // 检查人机验证是否通过
+      if (!token) {
+        alert('请完成人机验证！');
+        return;
+      }
+
+      // 提交评论
+      try {
+        const response = await fetch(`https://api-r.onani.cn/comment?page=${currentPage}&user=${encodeURIComponent(user)}&text=${encodeURIComponent(text)}`, {
+          method: 'POST',
+          headers: {
+            'CF-Turnstile-Response': token,
+          },
+        });
+
+        const result = await response.json();
+        if (result.status === 'success') {
+          alert('评论成功！');
+          location.reload(); // 刷新页面
+        } else {
+          alert('评论失败，请重试！');
+        }
+      } catch (error) {
+        alert('评论提交失败，请检查网络连接！');
+      }
+    }
+
+    // 监听哈希变化
+    window.onhashchange = () => {
+      currentPage = window.location.hash.substring(1);
+      loadPageContent();
+      loadComments();
+    };
+  </script>
+</head>
+<body>
+  <!-- 顶栏 -->
+  <div id="header">
+    <h1>{{.SiteName}}</h1>
+    <p>
+      <a href="#home" onclick="loadArticle('home')">首页</a> |
+      <a href="#article1" onclick="loadArticle('article1')">文章1</a> |
+      <a href="#article2" onclick="loadArticle('article2')">文章2</a> |
+      <a href="https://example.com">友情链接</a>
+    </p>
+    <hr>
+  </div>
+
+  <!-- 中 -->
+  <div id="main-content"></div>
+  <hr>
+
+  <!-- 下 -->
+  <div id="comments"></div>
+  <hr>
+
+  <!-- 评论表单 -->
+  <div id="comment-form">
+    <h3>发表评论</h3>
+    <input type="text" id="comment-user" placeholder="用户名（可选）">
+    <br>
+    <textarea id="comment-text" placeholder="评论内容"></textarea>
+    <br>
+    <div class="cf-turnstile" data-sitekey="0x4AAAAAAA4g12bCMT_ro-nq"></div>
+    <br>
+    <button onclick="submitComment()">提交评论</button>
+  </div>
+  <hr>
+
+  <!-- 底栏 -->
+  <div id="footer">
+    <p>© 2023 {{.SiteName}}. 采用 <a href="https://opensource.org/licenses/MIT">MIT开源协议</a>.</p>
+  </div>
+</body>
+</html>

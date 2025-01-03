@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>首页</title>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script>
+    
+    const articles = {
+      
+      "Hello": {
+        title: "Hello",
+        content: `\u003ch1 id=\u0022这是第一篇文章\u0022\u003e这是第一篇文章\u003c\/h1\u003e\n\n\u003ch2 id=\u0022介绍\u0022\u003e介绍\u003c\/h2\u003e\n\n\u003cp\u003e这是一个示例 Markdown 文件，用于测试转换工具。Markdown 是一种轻量级的标记语言，常用于编写文档和博客。\u003c\/p\u003e\n\n\u003ch2 id=\u0022内容\u0022\u003e内容\u003c\/h2\u003e\n\n\u003cul\u003e\n\u003cli\u003e\u003cstrong\u003e列表项 1\u003c\/strong\u003e：这是一个列表项。\u003c\/li\u003e\n\u003cli\u003e\u003cstrong\u003e列表项 2\u003c\/strong\u003e：这是另一个列表项。\u003c\/li\u003e\n\u003cli\u003e\u003cstrong\u003e列表项 3\u003c\/strong\u003e：这是第三个列表项。\u003c\/li\u003e\n\u003c\/ul\u003e\n\n\u003ch2 id=\u0022代码示例\u0022\u003e代码示例\u003c\/h2\u003e\n\n\u003cp\u003e以下是一个 Go 语言的代码示例：\u003c\/p\u003e\n\n\u003cpre\u003e\u003ccode class=\u0022language-go\u0022\u003epackage main\n\nimport \u0026quot;fmt\u0026quot;\n\nfunc main() \u007b\n    fmt.Println(\u0026quot;Hello, World!\u0026quot;)\n\u007d\n\u003c\/code\u003e\u003c\/pre\u003e\n`,
+      },
+      
+    };
+
+    
+    let currentPage = window.location.hash.substring(1) || 'home';
+
+    
+    window.onload = () => {
+      loadPageContent();
+      loadComments();
+    };
+
+    
+    function loadPageContent() {
+      if (currentPage === 'home') {
+        
+        document.getElementById('main-content').innerHTML = `
+          <h1>Record</h1>
+          <ul>
+            
+            <li><a href="#Hello" onclick="loadArticle('Hello')">Hello</a></li>
+            
+          </ul>
+        `;
+      } else {
+        
+        const article = articles[currentPage];
+        if (article) {
+          
+          document.getElementById('main-content').innerHTML = `
+            <h1>${article.title}</h1>
+            ${article.content}
+          `;
+        } else {
+          document.getElementById('main-content').innerHTML = `
+            <h1>文章未找到</h1>
+            <p>文章不存在。</p>
+          `;
+        }
+      }
+    }
+
+    
+    function loadArticle(link) {
+      currentPage = link;
+      window.location.hash = link;
+      loadPageContent();
+      loadComments();
+    }
+
+    
+    async function loadComments() {
+      const response = await fetch(`https://api-r.onani.cn/getcomment?page=${currentPage}`);
+      const { data: comments } = await response.json();
+      const commentsContainer = document.getElementById('comments');
+      commentsContainer.innerHTML = '<h3>评论区</h3>';
+
+      if (comments.length === 0) {
+        commentsContainer.innerHTML += '<p>暂无评论，快来抢沙发吧！</p>';
+      } else {
+        comments.forEach(comment => {
+          commentsContainer.innerHTML += `
+            <hr>
+            <p><strong>${comment.id}楼 ${comment.user}</strong> 说：</p>
+            <p>${comment.text}</p>
+            <p><small>时间: ${new Date(comment.timestamp).toLocaleString('zh-CN')}</small></p>
+            <p><small>设备: ${comment.user_agent}</small></p>
+          `;
+        });
+      }
+    }
+
+    
+    async function submitComment() {
+      const user = document.getElementById('comment-user').value || 'Anonymous';
+      const text = document.getElementById('comment-text').value.trim();
+      const token = document.querySelector('[name="cf-turnstile-response"]').value;
+
+      
+      if (!text) {
+        alert('评论内容不能为空！');
+        return;
+      }
+
+      
+      if (text.length > 500) {
+        alert('评论内容不能超过500字！');
+        return;
+      }
+
+      
+      if (user.length > 20) {
+        alert('用户名不能超过20字！');
+        return;
+      }
+
+      
+      if (!token) {
+        alert('请完成人机验证！');
+        return;
+      }
+
+      
+      try {
+        const response = await fetch(`https://api-r.onani.cn/comment?page=${currentPage}&user=${encodeURIComponent(user)}&text=${encodeURIComponent(text)}`, {
+          method: 'POST',
+          headers: {
+            'CF-Turnstile-Response': token,
+          },
+        });
+
+        const result = await response.json();
+        if (result.status === 'success') {
+          alert('评论成功！');
+          location.reload(); 
+        } else {
+          alert('评论失败，请重试！');
+        }
+      } catch (error) {
+        alert('评论提交失败，请检查网络连接！');
+      }
+    }
+
+    
+    window.onhashchange = () => {
+      currentPage = window.location.hash.substring(1);
+      loadPageContent();
+      loadComments();
+    };
+  </script>
+</head>
+<body>
+  
+  <div id="header">
+    <h1>我的站点</h1>
+    <p>
+      <a href="#home" onclick="loadArticle('home')">首页</a> |
+      <a href="#article1" onclick="loadArticle('article1')">文章1</a> |
+      <a href="#article2" onclick="loadArticle('article2')">文章2</a> |
+      <a href="https://example.com">友情链接</a>
+    </p>
+    <hr>
+  </div>
+
+  
+  <div id="main-content"></div>
+  <hr>
+
+  
+  <div id="comments"></div>
+  <hr>
+
+  
+  <div id="comment-form">
+    <h3>发表评论</h3>
+    <input type="text" id="comment-user" placeholder="用户名（可选）">
+    <br>
+    <textarea id="comment-text" placeholder="评论内容"></textarea>
+    <br>
+    <div class="cf-turnstile" data-sitekey="0x4AAAAAAA4g12bCMT_ro-nq"></div>
+    <br>
+    <button onclick="submitComment()">提交评论</button>
+  </div>
+  <hr>
+
+  
+  <div id="footer">
+    <p>© 2023 我的站点. 采用 <a href="https://opensource.org/licenses/MIT">MIT开源协议</a>.</p>
+  </div>
+</body>
+</html>
