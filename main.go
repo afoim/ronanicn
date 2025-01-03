@@ -47,7 +47,7 @@ func main() {
 	// 准备模板数据
 	data := TemplateData{
 		Title:    "首页",
-		SiteName: "我的站点",
+		SiteName: "AcoFork的Cloudflare全栈博客",
 		Articles: articles,
 	}
 
