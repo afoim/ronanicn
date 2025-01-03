@@ -24,6 +24,8 @@
       loadPageContent();
       loadComments();
       increaseViewCount(currentPage); // 增加当前页面的浏览量
+      resizeImages(); // 初始化图片缩放
+      window.addEventListener('resize', resizeImages); // 监听窗口大小变化
     };
 
     // 加载页面内容
@@ -55,6 +57,7 @@
             <p>浏览量: ${viewCount}</p>
             ${article.content}
           `;
+          resizeImages(); // 加载文章后重新调整图片大小
         } else {
           document.getElementById('main-content').innerHTML = `
             <h1>文章未找到</h1>
@@ -176,6 +179,21 @@
       loadComments();
       increaseViewCount(currentPage); // 增加新页面的浏览量
     };
+
+    // 图片缩放函数
+    function resizeImages() {
+      const images = document.querySelectorAll('#main-content img'); // 获取所有图片
+      const maxWidth = window.innerWidth * 0.9; // 图片最大宽度为浏览器宽度的90%
+      images.forEach(img => {
+        if (img.naturalWidth > maxWidth) {
+          img.style.width = `${maxWidth}px`; // 设置图片宽度
+          img.style.height = 'auto'; // 高度自适应
+        } else {
+          img.style.width = `${img.naturalWidth}px`; // 保持原始大小
+          img.style.height = 'auto';
+        }
+      });
+    }
   </script>
 </head>
 <body>
