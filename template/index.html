@@ -34,7 +34,7 @@
 
         // 首页内容
         document.getElementById('main-content').innerHTML = `
-          <h1>Record</h1>
+          <h1>文章列表</h1>
           <p>首页浏览量: ${viewCount}</p>
           <ul>
             {{range .Articles}}
@@ -212,7 +212,7 @@
 
   <!-- 底栏 -->
   <div id="footer">
-    <p>© 2023 {{.SiteName}}. 采用 <a href="https://opensource.org/licenses/MIT">MIT开源协议</a>.</p>
+    <p>© 2023 {{.SiteName}}. 采用 <a target="_blank" href="https://opensource.org/licenses/MIT">MIT开源协议</a>. <a target="_blank" href="https://github.com/afoim/ronanicn">Github</a></p>
   </div>
 </body>
 </html>
