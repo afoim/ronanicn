@@ -125,7 +125,7 @@
 
     // 提交评论
     async function submitComment() {
-      const user = document.getElementById('comment-user').value || 'Anonymous';
+      const user = document.getElementById('comment-user').value || '匿名用户';
       const text = document.getElementById('comment-text').value.trim();
       const token = document.querySelector('[name="cf-turnstile-response"]').value;
 
