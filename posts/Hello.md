@@ -23,3 +23,5 @@ func main() {
     fmt.Println("Hello, World!")
 }
 ```
+
+![](https://vrandom-pic.onani.cn/)
