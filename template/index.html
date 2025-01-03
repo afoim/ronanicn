@@ -185,7 +185,7 @@
     // 图片缩放函数
     function resizeImages() {
       const images = document.querySelectorAll('#main-content img'); // 获取所有图片
-      const maxWidth = window.innerWidth * 0.6; // 图片最大宽度为浏览器宽度的90%
+      const maxWidth = window.innerWidth * 0.3; // 图片最大宽度为浏览器宽度的90%
       images.forEach(img => {
         if (img.naturalWidth > maxWidth) {
           img.style.width = `${maxWidth}px`; // 设置图片宽度
