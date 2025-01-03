@@ -29,9 +29,13 @@
     // 加载页面内容
     async function loadPageContent() {
       if (currentPage === 'home') {
-        // 首页
+        // 获取首页浏览量
+        const viewCount = await getViewCount('home');
+
+        // 首页内容
         document.getElementById('main-content').innerHTML = `
           <h1>Record</h1>
+          <p>首页浏览量: ${viewCount}</p>
           <ul>
             {{range .Articles}}
             <li><a href="#{{.Link}}" onclick="loadArticle('{{.Link}}')">{{.Title}}</a></li>
@@ -42,7 +46,7 @@
         // 文章页
         const article = articles[currentPage];
         if (article) {
-          // 获取浏览量
+          // 获取文章浏览量
           const viewCount = await getViewCount(currentPage);
 
           // 直接填充文章正文到中区域
