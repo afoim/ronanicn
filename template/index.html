@@ -23,6 +23,7 @@
     window.onload = () => {
       loadPageContent();
       loadComments();
+      increaseViewCount(currentPage); // 增加当前页面的浏览量
     };
 
     // 加载页面内容
@@ -71,12 +72,25 @@
       }
     }
 
+    // 增加浏览量
+    async function increaseViewCount(page) {
+      try {
+        await fetch(`https://api-r.onani.cn/view?page=${page}`, {
+          method: 'POST', // 使用 POST 方法增加浏览量
+        });
+        console.log(`页面 ${page} 的浏览量已增加`);
+      } catch (error) {
+        console.error('增加浏览量失败:', error);
+      }
+    }
+
     // 加载文章
     function loadArticle(link) {
       currentPage = link;
       window.location.hash = link;
       loadPageContent();
       loadComments();
+      increaseViewCount(link); // 增加文章页面的浏览量
     }
 
     // 加载评论
@@ -157,6 +171,7 @@
       currentPage = window.location.hash.substring(1);
       loadPageContent();
       loadComments();
+      increaseViewCount(currentPage); // 增加新页面的浏览量
     };
   </script>
 </head>
