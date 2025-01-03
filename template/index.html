@@ -24,8 +24,7 @@
       loadPageContent();
       loadComments();
       increaseViewCount(currentPage); // 增加当前页面的浏览量
-      resizeImages(); // 初始化图片缩放
-      window.addEventListener('resize', resizeImages); // 监听窗口大小变化
+      handleImageLoading(); // 处理图片加载状态
     };
 
     // 加载页面内容
@@ -57,7 +56,6 @@
             <p>浏览量: ${viewCount}</p>
             ${article.content}
           `;
-          resizeImages(); // 加载文章后重新调整图片大小
           handleImageLoading(); // 处理图片加载状态
         } else {
           document.getElementById('main-content').innerHTML = `
@@ -181,44 +179,28 @@
       increaseViewCount(currentPage); // 增加新页面的浏览量
     };
 
-// 图片缩放函数
-function resizeImages() {
-  const images = document.querySelectorAll('#main-content img'); // 获取所有图片
-  const maxWidth = window.innerWidth * 0.9; // 图片最大宽度为浏览器宽度的90%
-  images.forEach(img => {
-    if (img.naturalWidth > maxWidth) {
-      img.style.width = `${maxWidth}px`; // 设置图片宽度
-      img.style.height = 'auto'; // 高度自适应
-    } else {
-      img.style.width = `${img.naturalWidth}px`; // 保持原始大小
-      img.style.height = 'auto';
+    // 处理图片加载状态
+    function handleImageLoading() {
+      const images = document.querySelectorAll('#main-content img'); // 获取所有图片
+      images.forEach(img => {
+        const src = img.src; // 获取图片 URL
+
+        // 创建占位符
+        const placeholder = document.createElement('p');
+        placeholder.textContent = `图片加载中...(${src})`;
+        img.parentNode.insertBefore(placeholder, img); // 插入占位符
+
+        // 图片加载完成后移除占位符
+        img.onload = () => {
+          placeholder.remove(); // 移除占位符
+        };
+
+        // 图片加载失败时更新占位符内容
+        img.onerror = () => {
+          placeholder.textContent = `图片加载失败: ${src}`;
+        };
+      });
     }
-  });
-}
-
-// 处理图片加载状态
-function handleImageLoading() {
-  const images = document.querySelectorAll('#main-content img'); // 获取所有图片
-  images.forEach(img => {
-    const src = img.src; // 获取图片 URL
-    img.alt = `图片加载中...(${src})`; // 设置占位符文本
-
-    // 设置默认宽度
-    img.style.width = '100%'; // 默认宽度为100%
-    img.style.height = 'auto'; // 高度自适应
-
-    // 图片加载完成后更新 alt 属性
-    img.onload = () => {
-      img.alt = `图片加载完成: ${src}`; // 更新为加载完成状态
-      resizeImages(); // 重新调整图片大小
-    };
-
-    // 图片加载失败时显示错误信息
-    img.onerror = () => {
-      img.alt = `图片加载失败: ${src}`; // 显示错误信息
-    };
-  });
-}
   </script>
 </head>
 <body>
