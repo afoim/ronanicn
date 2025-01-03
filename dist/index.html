@@ -74,12 +74,18 @@
         commentsContainer.innerHTML += '<p>暂无评论，快来抢沙发吧！</p>';
       } else {
         comments.forEach(comment => {
+          
+          const timestamp = new Date(comment.timestamp);
+          const utc8Time = new Date(timestamp.getTime() + 8 * 60 * 60 * 1000).toLocaleString('zh-CN');
+
           commentsContainer.innerHTML += `
             <hr>
             <p><strong>${comment.id}楼 ${comment.user}</strong> 说：</p>
             <p>${comment.text}</p>
-            <p><small>时间: ${new Date(comment.timestamp).toLocaleString('zh-CN')}</small></p>
-            <p><small>设备: ${comment.user_agent}</small></p>
+            <p>
+              <small>时间: ${utc8Time}</small><br>
+              <small>设备: ${comment.user_agent}</small>
+            </p>
           `;
         });
       }
